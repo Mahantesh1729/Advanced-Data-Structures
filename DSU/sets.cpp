@@ -1,117 +1,138 @@
-#include <bits/stdc++.h>
 
+#include <bits/stdc++.h>
 using namespace std;
 
-class Dsu{
-    int n;
-    vector <int> parent;
-    vector <int> rank;
-    public:
-    Dsu(int n)
-    {
-        this->n = n;
-        parent.resize(n);
-        rank.resize(n);
-        make_set(n);
-    }
-    void make_set(int n)
-    {
-        for(int i = 0; i < n; i++)
-        {
-            parent[i] = i;
-        }
-    }
-    
-    int find(int x)
-    {
-        if(parent[x] != x)
-        {
-            return find(parent[x]);
-        }
-        return find(parent[x]);
-    }
-    
-    void union(int a, int b)
-    {
-        int roota = find(a);
-        int rootb = find(b);
-        
-        if(roota == rootb)
-        return;
-        
-        if(rank[a] > rank[b])
-        {
-            parent[b] = a;
-            rank[a]++;
-        }
-        else if(rank[b] > rank[a])
-        {
-            parent[a] = b;
-            rank[b]++;
-        }
-        else
-        {
-            parent[b] = a;
-            rank[a]++;
-        }
-    }
+class DisjointUnionSets
+{
+	
+	vector<int> rank, parent;
+	int n;
+	
+	public:
+	DisjointUnionSets(int n)
+	{
+		rank.resize(n);
+		parent.resize(n);
+		this->n = n;
+		makeSet();
+	}
+
+	void makeSet()
+	{
+		for (int i = 0; i < n; i++)
+			parent[i] = i;
+	}
+
+	int find(int x)
+	{
+		if (parent[x] != x)
+		{
+			parent[x]=find(parent[x]);
+		}
+
+		return parent[x];
+	}
+
+	void Union(int x, int y)
+	{
+		int xRoot = find(x);
+		int yRoot = find(y);
+
+		if (xRoot == yRoot)
+			return;
+
+		
+		if (rank[xRoot] < rank[yRoot])
+			parent[xRoot] = yRoot;
+
+		
+		else if (rank[yRoot] < rank[xRoot])
+			parent[yRoot] = xRoot;
+
+		else 
+		{
+			parent[yRoot] = xRoot;	
+			rank[xRoot] = rank[xRoot] + 1;
+		}
+	}
 };
 
-int findIslands(vector <vector <int>> arr);
-
-int main()
+int countIslands(vector<vector<int>>a)
 {
-    int m, n;
-    cin >> m >> n;
-    
-    vector <vector <int>> arr(m, vector <int> (n));
-    
-    for(int i = 0; i < m; i++)
-    {
-        for(int j = 0; j < n; j++)
-        {
-            cin >> arr[i][j];
-        }
-    }
-    
-    cout << findIslands(arr);
+	int n = a.size();
+	int m = a[0].size();
+
+	DisjointUnionSets *dus = new DisjointUnionSets(n * m);
+
+	for (int j = 0; j < n; j++)
+	{
+		for (int k = 0; k < m; k++)
+		{
+			if (a[j][k] == 0)
+				continue;
+			if (j + 1 < n && a[j + 1][k] == 1)
+				dus->Union(j * (m) + k,
+						(j + 1) * (m) + k);
+			if (j - 1 >= 0 && a[j - 1][k] == 1)
+				dus->Union(j * (m) + k,
+						(j - 1) * (m) + k);
+			if (k + 1 < m && a[j][k + 1] == 1)
+				dus->Union(j * (m) + k,
+						(j) * (m) + k + 1);
+			if (k - 1 >= 0 && a[j][k - 1] == 1)
+				dus->Union(j * (m) + k,
+						(j) * (m) + k - 1);
+			if (j + 1 < n && k + 1 < m &&
+					a[j + 1][k + 1] == 1)
+				dus->Union(j * (m) + k,
+						(j + 1) * (m) + k + 1);
+			if (j + 1 < n && k - 1 >= 0 &&
+					a[j + 1][k - 1] == 1)
+				dus->Union(j * m + k,
+						(j + 1) * (m) + k - 1);
+			if (j - 1 >= 0 && k + 1 < m &&
+					a[j - 1][k + 1] == 1)
+				dus->Union(j * m + k,
+						(j - 1) * m + k + 1);
+			if (j - 1 >= 0 && k - 1 >= 0 &&
+					a[j - 1][k - 1] == 1)
+				dus->Union(j * m + k,
+						(j - 1) * m + k - 1);
+		}
+	}
+
+	int *c = new int[n * m];
+	int numberOfIslands = 0;
+	for (int j = 0; j < n; j++)
+	{
+		for (int k = 0; k < m; k++)
+		{
+			if (a[j][k] == 1)
+			{
+				int x = dus->find(j * m + k);
+
+				
+				if (c[x] == 0)
+				{
+					numberOfIslands++;
+					c[x]++;
+				}
+
+				else
+					c[x]++;
+			}
+		}
+	}
+	return numberOfIslands;
 }
 
-int findIslands(vector <vector <int>> arr)
+int main(void)
 {
-    int m = arr.size();
-    int n = arr[0].size();
-    Dsu *temp = new Dsu(m * n);
-    
-    for(int i = 0; i < m; i++)
-    {
-        for(int j = 0; j < n; j++)
-        {
-            if(arr[i][j])
-            {
-                    if(j - 1 >= 0 && arr[i][j - 1])
-                    {
-                        temp->union(i * n + j, i * n + j - 1);
-                    }
-                    if(j + 1 < n && arr[i][j + 1])
-                    {
-                        temp->union(i * n + j, i * n + j + 1)
-                    }
-                    if(i + 1 < m && j - 1 >= 0 && arr[i + 1][j - 1])
-                    {
-                        temp->union(i * n + j, (i + 1) * n + j - 1)
-                    }
-                    if(i + 1 < m && arr[i + 1][j])
-                    {
-                        temp->union(i * n + j, (i + 1) * n + j);
-                    }
-                    if(i + 1 < m && j + 1 < n && arr[i + 1][j + 1])
-                    {
-                        temp->union(i * n + j, (i + 1) * n + j + 1);
-                    }
-            }
-        }
-    }
-    return 1;
+	vector<vector<int>>a = {{1, 1, 0, 0, 0},
+							{0, 1, 0, 0, 1},
+							{1, 0, 0, 1, 1},
+							{0, 0, 0, 0, 0},
+							{1, 0, 1, 0, 1}};
+	cout << "Number of Islands is: "
+		<< countIslands(a) << endl;
 }
-
