@@ -1,103 +1,108 @@
 #include <bits/stdc++.h>
 
-struct node
-{
-       int data;
-       struct node *xnext;
+struct node{
+	int data;
+	struct node* xlink;
 };
 
-typedef node *Node;
+typedef struct node* Node;
 
 using namespace std;
 
 Node insert(Node head, int value);
-Node Xor(Node x, Node y);
+Node Xor(Node a, Node b);
 void display(Node head);
-Node deleteNode(Node head);
+Node deleteLastNode(Node head);
 
 int main()
 {
-       Node head = NULL;
-       int value;
-       int temp;
-       while (1)
-       {
-              cout << "\n1. Insert 2. Display 3. Delete 4. Exit \n";
-              cin >> temp;
-
-              switch (temp)
-              {
-              case 1:
-                     cout << "Enter some value: ";
-                     cin >> value;
-                     head = insert(head, value);
-                     break;
-              case 2:
-                     display(head);
-                     break;
-              case 3:
-                     head = deleteNode(head);
-                     break;
-              case 4:
-                     exit(0);
-              }
-       }
+	Node head = NULL;
+	int value;
+	int choice;
+	while(1)
+	{
+		cout << "\n 1.insert 2.display 3.delete 4.exit\n";
+		cin >> choice;
+		
+		switch(choice)
+		{
+			case 1:	 cin >> value;
+					 head = insert(head, value);
+					 break;
+			case 2: display(head);
+					break;
+			case 3: head = deleteLastNode(head);
+					break;
+			case 4: exit(0);
+			default: cout << "Enter a valid choice\n";
+		}
+	}
 }
 
 Node insert(Node head, int value)
 {
-       Node temp = (Node)malloc(sizeof(struct node));
-
-       temp->data = value;
-
-       temp->xnext = head;
-
-       if (head != NULL)
-       {
-              head->xnext = Xor(temp, head->xnext);
-       }
-
-       head = temp;
-
-       return head;
-}
-
-Node Xor(Node x, Node y)
-{
-       return reinterpret_cast<Node>(
-           reinterpret_cast<uintptr_t>(x) ^ reinterpret_cast<uintptr_t>(y));
+	Node newNode = (Node) malloc(sizeof(struct node));
+	
+	newNode->data = value;
+	
+	newNode->xlink = head;
+	
+	if(head != NULL)
+	{
+		head->xlink = Xor(newNode, head->xlink);
+	}
+	head = newNode;
+	
+	return head;
 }
 
 void display(Node head)
 {
-       Node cur = head;
-       Node prev = NULL;
-       Node next;
-
-       while (cur != NULL)
-       {
-              cout << cur->data << " ";
-
-              next = Xor(prev, cur->xnext);
-
-              prev = cur;
-              cur = next;
-       }
+	Node cur = head;
+	Node prev = NULL;
+	Node next;
+	
+	while(cur != NULL)
+	{
+		cout << cur->data << " ";
+		next = Xor(prev, cur->xlink);
+		prev = cur;
+		cur = next;
+	}
+	return;
 }
 
-Node deleteNode(Node head)
+Node Xor(Node a, Node b)
 {
-       if (head == NULL)
-              return NULL;
-       else if (head->xnext == NULL)
-       {
-              free(head);
-              return NULL;
-       }
+	return reinterpret_cast <Node> (reinterpret_cast<uintptr_t>(a) ^ reinterpret_cast<uintptr_t>(b));
+}
 
-       Node temp = head;
-       head = head->xnext;
-       temp->xnext->xnext = Xor(head, temp->xnext->xnext);
-       free(temp);
-       return head;
+Node deleteLastNode(Node head)
+{
+    if(head == NULL)
+    {
+        cout << "\nNo nodes to delete\n";
+        return NULL;
+    }
+    if(head->xlink == NULL)
+    {
+        free(head);
+        return NULL;
+    }
+    
+    Node cur = head;
+    Node prev = NULL;
+    Node next;
+    Node pPrev = NULL;
+    while(cur->xlink != prev)
+    {
+        pPrev = prev;
+        next = Xor(prev, cur->xlink);
+        prev = cur;
+        cur = next;
+    }
+    prev->xlink = pPrev;
+    free(cur);
+    return head;
+    
 }
